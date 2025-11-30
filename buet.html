@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUET WAR ROOM // COMMANDER SAMIL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            
+            /* Deep Work Colors */
+            --primary-neon: #00f3ff; /* Electric Blue */
+            --secondary-neon: #00ff9d; /* Matrix Green */
+            --glow-intensity: 0 0 20px var(--primary-neon);
+            
+            /* Recharge Colors */
+            --danger-red: #ff2a2a;
+            --dim-text: #4a4a4a;
+        }
+
+        /* Reset & Base */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: #e0e0e0;
+            font-family: 'JetBrains Mono', monospace;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s ease;
+        }
+
+        /* Canvas Background */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* Container */
+        .dashboard-container {
+            position: relative;
+            width: 90%;
+            max-width: 1000px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px; /* Brutalist corners */
+            padding: 3rem;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            z-index: 1;
+            transition: box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+
+        /* --- NEW: IDENTITY BADGE --- */
+        .identity-badge {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            padding-bottom: 1.5rem;
+        }
+
+        .identity-label {
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: var(--secondary-neon);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .identity-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--primary-neon);
+            letter-spacing: 2px;
+            position: relative;
+            min-height: 2.2rem; /* Keeps layout stable while typing */
+        }
+        
+        /* Blinking cursor effect */
+        .identity-name::after {
+            content: '_';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Glitch Title */
+        .title-wrapper {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        h1.glitch {
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            position: relative;
+            color: #fff;
+            letter-spacing: 4px;
+        }
+
+        h1.glitch::before, h1.glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+        }
+
+        h1.glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 var(--danger-red);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        h1.glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 var(--primary-neon);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        .subtitle {
+            color: var(--primary-neon);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+
+        /* Countdown Grid */
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .time-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--primary-neon);
+            box-shadow: 0 0 10px var(--primary-neon);
+            opacity: 0.7;
+        }
+
+        .number {
+            font-size: 4rem;
+            font-weight: 700;
+            display: block;
+            text-shadow: 0 0 15px var(--primary-neon);
+            color: #fff;
+            line-height: 1;
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: var(--secondary-neon);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* Mode Toggle */
+        .control-panel {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .toggle-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+        }
+
+        /* The Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            transition: .4s;
+            transform: skewX(-15deg);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 3px;
+            background-color: #555;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: rgba(0, 243, 255, 0.2);
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 15px var(--primary-neon);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(46px);
+            background-color: var(--primary-neon);
+            box-shadow: 0 0 10px var(--primary-neon);
+        }
+
+        .status-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px currentColor;
+            transition: color 0.3s ease;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Marquee Footer */
+        .marquee-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #000;
+            border-top: 1px solid var(--primary-neon);
+            padding: 10px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 20s linear infinite;
+            font-size: 1rem;
+            color: var(--primary-neon);
+            font-weight: 600;
+        }
+
+        .marquee-content span {
+            margin-right: 50px;
+        }
+
+        /* Mode Logic: Recharging */
+        body.recharging {
+            --primary-neon: #333; /* Dim blue */
+            --secondary-neon: #444;
+            --bg-color: #000;
+        }
+        
+        body.recharging .dashboard-container {
+            box-shadow: none;
+            border-color: #333;
+        }
+
+        body.recharging .number, body.recharging .identity-name {
+            text-shadow: none;
+            color: #444;
+        }
+        
+        body.recharging .time-box::before {
+            background: var(--danger-red);
+            box-shadow: 0 0 5px var(--danger-red);
+        }
+
+        body.recharging .status-text {
+            color: var(--danger-red);
+            text-shadow: 0 0 10px var(--danger-red);
+        }
+
+        body.recharging .marquee-container {
+            border-top: 1px solid var(--danger-red);
+        }
+        
+        body.recharging .marquee-content {
+            color: var(--danger-red);
+        }
+        
+        body.recharging .identity-badge {
+            border-bottom: 1px solid var(--danger-red);
+        }
+
+        /* Animations */
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 81px, 0); transform: translate(0) }
+            20% { clip: rect(40px, 9999px, 120px, 0); transform: translate(-2px) }
+            40% { clip: rect(2px, 9999px, 20px, 0); transform: translate(2px) }
+            60% { clip: rect(90px, 9999px, 120px, 0); transform: translate(-2px) }
+            80% { clip: rect(15px, 9999px, 50px, 0); transform: translate(2px) }
+            100% { clip: rect(60px, 9999px, 100px, 0); transform: translate(0) }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(30px, 9999px, 10px, 0); transform: translate(0) }
+            20% { clip: rect(100px, 9999px, 60px, 0); transform: translate(2px) }
+            40% { clip: rect(20px, 9999px, 80px, 0); transform: translate(-2px) }
+            60% { clip: rect(120px, 9999px, 40px, 0); transform: translate(2px) }
+            80% { clip: rect(10px, 9999px, 130px, 0); transform: translate(-2px) }
+            100% { clip: rect(50px, 9999px, 20px, 0); transform: translate(0) }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1.glitch { font-size: 2rem; }
+            .identity-name { font-size: 1.2rem; }
+            .countdown-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+            .number { font-size: 3rem; }
+            .dashboard-container { padding: 1.5rem; width: 95%; }
+        }
+    </style>
+</head>
+<body class="deep-work">
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="dashboard-container">
+        
+        <!-- FLEX MODULE: ADDED NAME HERE -->
+        <div class="identity-badge">
+            <div class="identity-label">OPERATIVE AUTHENTICATED</div>
+            <div class="identity-name" id="typewriter-text"></div>
+        </div>
+
+        <div class="title-wrapper">
+            <h1 class="glitch" data-text="BUET // WAR ROOM">BUET // WAR ROOM</h1>
+            <div class="subtitle">TARGET: JANUARY 10, <span id="target-year"></span></div>
+        </div>
+
+        <div class="countdown-grid">
+            <div class="time-box">
+                <span class="number" id="days">00</span>
+                <span class="label">Days</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="hours">00</span>
+                <span class="label">Hours</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="minutes">00</span>
+                <span class="label">Minutes</span>
+            </div>
+            <div class="time-box">
+                <span class="number" id="seconds">00</span>
+                <span class="label">Seconds</span>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <label class="toggle-container">
+                <span class="status-text" id="status-label">MODE: DEEP WORK</span>
+                <div class="switch">
+                    <input type="checkbox" id="mode-toggle" checked>
+                    <span class="slider"></span>
+                </div>
+            </label>
+            <div class="status-message" id="status-message">Don't Disturb. Building the Future.</div>
+        </div>
+    </div>
+
+    <div class="marquee-container">
+        <div class="marquee-content">
+            <span>BUET IMPLIES EXCELLENCE</span>
+            <span>PAIN IS TEMPORARY, GLORY IS FOREVER</span>
+            <span>SLEEP IS FOR THE WEAK</span>
+            <span>ENGINEERING THE FUTURE</span>
+            <span>FOCUS // EXECUTE // REPEAT</span>
+            <span>ADMISSION TEST LOADING...</span>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // Setting target year to 2026 to ensure the countdown works visibly for now
+        // Change to 2025 if you want historical accuracy
+        const TARGET_YEAR = 2026; 
+        const TARGET_DATE = new Date(`January 10, ${TARGET_YEAR} 00:00:00`).getTime();
+        
+        document.getElementById('target-year').innerText = TARGET_YEAR;
+
+        // --- COUNTDOWN LOGIC ---
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = TARGET_DATE - now;
+
+            if (distance < 0) {
+                document.getElementById("days").innerText = "00";
+                document.getElementById("hours").innerText = "00";
+                document.getElementById("minutes").innerText = "00";
+                document.getElementById("seconds").innerText = "00";
+                document.querySelector(".subtitle").innerText = "MISSION STATUS: DEPLOYED";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days < 10 ? "0" + days : days;
+            document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        // --- TOGGLE LOGIC ---
+        const toggle = document.getElementById('mode-toggle');
+        const body = document.body;
+        const statusLabel = document.getElementById('status-label');
+        const statusMsg = document.getElementById('status-message');
+
+        toggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                // DEEP WORK MODE
+                body.classList.remove('recharging');
+                statusLabel.innerText = "MODE: DEEP WORK";
+                statusMsg.innerText = "Don't Disturb. Building the Future.";
+                particleColor = '#00f3ff';
+            } else {
+                // RECHARGING MODE
+                body.classList.add('recharging');
+                statusLabel.innerText = "MODE: RECHARGING";
+                statusMsg.innerText = "System Cooling Down.";
+                particleColor = '#ff2a2a';
+            }
+        });
+
+        // --- PARTICLE BACKGROUND ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particleColor = '#00f3ff';
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        const particleCount = 60; // Performance friendly
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = particleColor;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            // Draw connections
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.strokeStyle = particleColor;
+                        ctx.lineWidth = 0.2;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        initParticles();
+        animateParticles();
+
+        // --- TYPEWRITER EFFECT ---
+        const typeText = "SAROWAR JAHAN SAMIL";
+        const typeElement = document.getElementById('typewriter-text');
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 100;
+
+        function typeWriter() {
+            const currentString = typeText.substring(0, charIndex);
+            typeElement.textContent = currentString;
+
+            if (!isDeleting && charIndex < typeText.length) {
+                // Typing
+                charIndex++;
+                typeSpeed = 100; // Normal typing speed
+                setTimeout(typeWriter, typeSpeed);
+            } else if (isDeleting && charIndex > 0) {
+                // Deleting
+                charIndex--;
+                typeSpeed = 50; // Faster deleting speed
+                setTimeout(typeWriter, typeSpeed);
+            } else {
+                // Switching state
+                isDeleting = !isDeleting;
+                // Pause before deleting or re-typing
+                setTimeout(typeWriter, isDeleting ? 2000 : 500);
+            }
+        }
+
+        // Start the typing loop
+        typeWriter();
+    </script>
+</body>
+</html>
