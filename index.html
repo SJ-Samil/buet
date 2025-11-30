@@ -70,7 +70,7 @@
             transition: box-shadow 0.4s ease, border-color 0.4s ease;
         }
 
-        /* --- NEW: IDENTITY BADGE --- */
+        /* --- IDENTITY BADGE --- */
         .identity-badge {
             width: 100%;
             display: flex;
@@ -288,8 +288,8 @@
             left: 0;
             width: 100%;
             background: #000;
-            border-top: 2px solid var(--primary-neon);
-            padding: 20px 0;
+            border-top: 3px solid var(--primary-neon); /* Thicker border */
+            padding: 25px 0; /* More padding */
             overflow: hidden;
             white-space: nowrap;
             z-index: 10;
@@ -298,16 +298,18 @@
         .marquee-content {
             display: inline-block;
             padding-left: 100%;
-            animation: marquee 20s linear infinite;
-            font-size: 2.5rem; /* INCREASED SIZE */
+            animation: marquee 15s linear infinite; /* Faster speed for high impact */
+            font-size: 6rem; /* MASSIVE TEXT */
+            line-height: 1;
             color: var(--primary-neon);
-            font-weight: 800;
-            letter-spacing: 2px;
+            font-weight: 900;
+            letter-spacing: 4px;
             text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5); /* Stronger glow */
         }
 
         .marquee-content span {
-            margin-right: 80px;
+            margin-right: 120px;
         }
 
         /* Mode Logic: Recharging */
@@ -338,11 +340,12 @@
         }
 
         body.recharging .marquee-container {
-            border-top: 1px solid var(--danger-red);
+            border-top: 3px solid var(--danger-red);
         }
         
         body.recharging .marquee-content {
             color: var(--danger-red);
+            text-shadow: 0 0 20px rgba(255, 42, 42, 0.5);
         }
         
         body.recharging .identity-badge {
@@ -380,6 +383,7 @@
             .countdown-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
             .number { font-size: 3rem; }
             .dashboard-container { padding: 1.5rem; width: 95%; }
+            .marquee-content { font-size: 3rem; } /* Smaller on mobile but still big */
         }
     </style>
 </head>
