@@ -3,557 +3,566 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BUET WAR ROOM // COMMANDER SAMIL</title>
+    <title>BUET WAR ROOM // COMMANDER SAMIL [MK-II]</title>
+    
+    <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700;800&family=Rajdhani:wght@300;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-color: #050505;
-            --glass-bg: rgba(20, 20, 20, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            /* --- COLOR PALETTE --- */
+            --bg-color: #030303;
+            --panel-bg: rgba(10, 10, 10, 0.7);
+            --grid-line: rgba(255, 255, 255, 0.05);
             
-            /* Deep Work Colors */
-            --primary-neon: #00f3ff; /* Electric Blue */
-            --secondary-neon: #00ff9d; /* Matrix Green */
-            --glow-intensity: 0 0 20px var(--primary-neon);
+            /* DEEP WORK (CYAN/BLUE) */
+            --theme-color: #00f3ff;
+            --theme-dim: rgba(0, 243, 255, 0.1);
+            --theme-shadow: rgba(0, 243, 255, 0.4);
             
-            /* Recharge Colors */
-            --danger-red: #ff2a2a;
-            --dim-text: #4a4a4a;
+            /* RECHARGE (CRITICAL RED) */
+            --alert-color: #ff2a2a;
+            
+            /* FONTS */
+            --font-display: 'Rajdhani', sans-serif;
+            --font-data: 'JetBrains Mono', monospace;
         }
 
-        /* Reset & Base */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* --- GLOBAL RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; user-select: none; }
         
         body {
             background-color: var(--bg-color);
-            color: #e0e0e0;
-            font-family: 'JetBrains Mono', monospace;
+            color: var(--theme-color);
+            font-family: var(--font-data);
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: background 0.5s ease;
+            transition: all 0.5s ease;
         }
 
-        /* Canvas Background */
+        /* --- BACKGROUND FX --- */
         #particle-canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.6;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
         }
 
-        /* Container */
-        .dashboard-container {
-            position: relative;
-            width: 90%;
-            max-width: 1000px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 4px; /* Brutalist corners */
-            padding: 3rem;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2rem;
-            z-index: 1;
-            transition: box-shadow 0.4s ease, border-color 0.4s ease;
-        }
-
-        /* --- IDENTITY BADGE --- */
-        .identity-badge {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
-            padding-bottom: 1.5rem;
-            transition: border-color 0.4s ease;
-        }
-
-        .identity-label {
-            font-size: 0.7rem;
-            letter-spacing: 3px;
-            color: var(--secondary-neon);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .identity-name {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #fff;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px var(--primary-neon);
-            letter-spacing: 2px;
-            position: relative;
-            min-height: 2.2rem;
-            transition: text-shadow 0.4s ease;
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.3;
         }
         
-        .identity-name::after {
-            content: '_';
-            animation: blink 1s infinite;
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 50%, black 150%);
+            z-index: 99;
+            pointer-events: none;
         }
 
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
-        /* Glitch Title */
-        .title-wrapper {
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        h1.glitch {
-            font-size: 3rem;
-            font-weight: 800;
-            text-transform: uppercase;
+        /* --- HUD LAYOUT --- */
+        .hud-container {
             position: relative;
-            color: #fff;
-            letter-spacing: 4px;
-        }
-
-        h1.glitch::before, h1.glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-color);
-        }
-
-        h1.glitch::before {
-            left: 2px;
-            text-shadow: -1px 0 var(--danger-red);
-            clip: rect(24px, 550px, 90px, 0);
-            animation: glitch-anim-2 3s infinite linear alternate-reverse;
-        }
-
-        h1.glitch::after {
-            left: -2px;
-            text-shadow: -1px 0 var(--primary-neon);
-            clip: rect(85px, 550px, 140px, 0);
-            animation: glitch-anim 2.5s infinite linear alternate-reverse;
-        }
-
-        .subtitle {
-            color: var(--primary-neon);
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            margin-top: 0.5rem;
-            opacity: 0.8;
-            transition: color 0.4s ease;
-        }
-
-        /* LIVE CLOCK */
-        .live-clock-wrapper {
-            margin-bottom: 1.5rem;
-            text-align: center;
-            padding: 1rem 2rem;
-            border: 1px solid var(--glass-border);
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 4px;
-            width: 100%;
-            transition: border-color 0.4s ease;
-        }
-
-        .live-time {
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: #fff;
-            text-shadow: 0 0 20px var(--primary-neon);
-            letter-spacing: 2px;
-            line-height: 1.1;
-            transition: text-shadow 0.4s ease, color 0.4s ease;
-        }
-
-        .live-date {
-            font-size: 0.9rem;
-            color: var(--secondary-neon);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-top: 0.5rem;
-        }
-
-        /* Countdown Grid */
-        .countdown-grid {
+            z-index: 10;
+            width: 95vw;
+            height: 90vh;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            width: 100%;
+            grid-template-rows: 80px 1fr 100px; /* Header, Main, Footer */
+            grid-template-columns: 300px 1fr 300px; /* Left Panel, Center, Right Panel */
+            gap: 1rem;
         }
 
-        .time-box {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--glass-border);
-            padding: 1.5rem;
-            text-align: center;
+        /* --- BORDERS & PANELS --- */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--theme-dim);
+            backdrop-filter: blur(4px);
             position: relative;
-            overflow: hidden;
-        }
-
-        .time-box::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: var(--primary-neon);
-            box-shadow: 0 0 10px var(--primary-neon);
-            opacity: 0.7;
-            transition: background 0.4s ease, box-shadow 0.4s ease;
-        }
-
-        .number {
-            font-size: 4rem;
-            font-weight: 700;
-            display: block;
-            text-shadow: 0 0 15px var(--primary-neon);
-            color: #fff;
-            line-height: 1;
-            transition: text-shadow 0.4s ease;
-        }
-
-        .label {
-            font-size: 0.8rem;
-            color: var(--secondary-neon);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 10px;
-            display: block;
-            transition: color 0.4s ease;
-        }
-
-        /* --- CONTROL PANEL --- */
-        .control-panel {
-            width: 100%;
             display: flex;
             flex-direction: column;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        /* CORNER DECORATIONS */
+        .corner-tl, .corner-tr, .corner-bl, .corner-br {
+            position: absolute;
+            width: 10px; height: 10px;
+            border: 2px solid var(--theme-color);
+            transition: border-color 0.3s ease;
+        }
+        .corner-tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+        .corner-tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+        .corner-bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+        .corner-br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
+        /* --- HEADER SECTION --- */
+        .header-bar {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--theme-dim);
         }
 
-        /* Toggle */
-        .toggle-container {
-            position: relative;
+        .sys-status {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
             display: flex;
             align-items: center;
             gap: 1rem;
-            cursor: pointer;
+        }
+        
+        .blink-dot {
+            width: 12px; height: 12px;
+            background: var(--theme-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--theme-color);
+            animation: pulse 2s infinite;
         }
 
-        /* The Switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 80px;
-            height: 34px;
+        .user-id {
+            text-align: right;
         }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            transition: .4s;
-            transform: skewX(-15deg);
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 3px;
-            background-color: #555;
-            transition: .4s;
-        }
-
-        input:checked + .slider {
-            background-color: rgba(0, 243, 255, 0.2);
-            border-color: var(--primary-neon);
-            box-shadow: 0 0 15px var(--primary-neon);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(46px);
-            background-color: var(--primary-neon);
-            box-shadow: 0 0 10px var(--primary-neon);
-        }
-
-        .status-text {
+        
+        .user-name {
             font-size: 1.2rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px var(--theme-color);
+        }
+        
+        .user-rank {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+        }
+
+        /* --- LEFT PANEL (MISSION DATA) --- */
+        .left-panel {
+            grid-column: 1;
+            grid-row: 2;
+            padding: 2rem;
+            justify-content: flex-start;
+            gap: 2rem;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 85% 100%, 0 100%);
+        }
+
+        .data-block h3 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: rgba(255,255,255,0.6);
+            border-bottom: 1px solid var(--theme-dim);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        /* DECORATIVE VISUALIZERS */
+        .audio-wave {
+            display: flex;
+            gap: 3px;
+            height: 40px;
+            align-items: flex-end;
+        }
+        .bar {
+            width: 4px;
+            background: var(--theme-color);
+            animation: equalizer 1s infinite ease-in-out;
+            opacity: 0.8;
+        }
+        .bar:nth-child(2) { animation-duration: 1.2s; }
+        .bar:nth-child(3) { animation-duration: 0.8s; }
+        .bar:nth-child(4) { animation-duration: 1.5s; }
+        .bar:nth-child(5) { animation-duration: 1.0s; }
+
+        /* --- CENTER STAGE (CLOCK & COUNTDOWN) --- */
+        .center-stage {
+            grid-column: 2;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* BIG CLOCK */
+        .main-clock {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .main-clock::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%; height: 120%;
+            border: 1px dashed var(--theme-dim);
+            border-radius: 50%;
+            animation: spin 60s linear infinite;
+            z-index: -1;
+        }
+
+        .time-display {
+            font-size: 6rem;
+            font-weight: 800;
+            line-height: 1;
+            text-shadow: 0 0 30px var(--theme-shadow);
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .date-display {
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            margin-top: 1rem;
+            font-family: var(--font-display);
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* COUNTDOWN MODULES */
+        .countdown-wrapper {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .count-module {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--theme-dim);
+            padding: 1rem;
+            min-width: 100px;
+            text-align: center;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+            transition: all 0.3s ease;
+        }
+        
+        .count-val {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+            text-shadow: 0 0 10px var(--theme-shadow);
+        }
+        
+        .count-label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+        }
+
+        /* --- RIGHT PANEL (CONTROLS) --- */
+        .right-panel {
+            grid-column: 3;
+            grid-row: 2;
+            padding: 2rem;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 15% 100%, 0 90%);
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* TACTICAL TOGGLE */
+        .mode-switch-container {
+            text-align: center;
+            margin-top: auto; /* Push to bottom of panel */
+        }
+        
+        .switch-label {
+            display: block;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        /* Custom Tactical Button */
+        .tac-switch {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            background: #111;
+            border: 1px solid #333;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
-            text-shadow: 0 0 10px currentColor;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .tac-switch::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; height: 100%; width: 4px;
+            background: var(--theme-color);
+            transition: width 0.3s ease;
+            z-index: 0;
+        }
+        
+        .tac-switch:hover::before {
+            width: 100%;
+            opacity: 0.1;
+        }
+        
+        .tac-text {
+            position: relative;
+            z-index: 1;
             transition: color 0.3s ease;
         }
 
-        .status-message {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: #888;
-            font-style: italic;
-        }
-
-        /* NEW: MODE TIMER (Bottom) */
-        .mode-timer {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: var(--primary-neon);
-            margin-top: 0.8rem;
-            text-shadow: 0 0 12px var(--primary-neon);
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 2px;
-            transition: color 0.4s ease, text-shadow 0.4s ease;
-        }
-
-        /* Marquee Footer */
-        .marquee-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #000;
-            border-top: 1.5px solid var(--primary-neon);
-            padding: 15px 0;
+        /* --- FOOTER (MARQUEE) --- */
+        .footer-bar {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            border-top: 1px solid var(--theme-dim);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            background: var(--bg-color);
+            position: relative;
             overflow: hidden;
-            white-space: nowrap;
-            z-index: 10;
-            transition: border-color 0.4s ease;
         }
-
-        .marquee-content {
+        
+        .marquee {
+            white-space: nowrap;
+            overflow: hidden;
+            position: absolute;
+            width: 100%;
+        }
+        
+        .marquee span {
             display: inline-block;
             padding-left: 100%;
             animation: marquee 20s linear infinite;
-            font-size: 1.5rem;
-            color: var(--primary-neon);
-            font-weight: 650;
-            transition: color 0.4s ease;
+            font-size: 1.6rem; /* Increased from 1.2rem */
+            font-family: var(--font-display);
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-        .marquee-content span {
-            margin-right: 60px;
-        }
-
-        /* Mode Logic: Recharging */
-        body.recharging {
-            --primary-neon: #333;
-            --secondary-neon: #444;
-            --bg-color: #000;
+        /* --- THEME STATES (JS CONTROLLED) --- */
+        body.mode-deep-work {
+            --theme-color: #00f3ff;
+            --theme-dim: rgba(0, 243, 255, 0.2);
+            --theme-shadow: rgba(0, 243, 255, 0.5);
         }
         
-        body.recharging .dashboard-container {
-            box-shadow: none;
-            border-color: #333;
+        body.mode-recharge {
+            --theme-color: #ff2a2a;
+            --theme-dim: rgba(255, 42, 42, 0.2);
+            --theme-shadow: rgba(255, 42, 42, 0.5);
         }
 
-        body.recharging .number, 
-        body.recharging .identity-name {
-            text-shadow: none;
-            color: #444;
-        }
-        
-        body.recharging .time-box::before {
-            background: var(--danger-red);
-            box-shadow: 0 0 5px var(--danger-red);
-        }
-
-        body.recharging .status-text {
-            color: var(--danger-red);
-            text-shadow: 0 0 10px var(--danger-red);
-        }
-        
-        body.recharging .mode-timer {
-            color: var(--danger-red);
-            text-shadow: 0 0 10px var(--danger-red);
-        }
-
-        body.recharging .marquee-container {
-            border-top: 1px solid var(--danger-red);
-        }
-        
-        body.recharging .marquee-content {
-            color: var(--danger-red);
-        }
-        
-        body.recharging .identity-badge {
-            border-bottom: 1px solid var(--danger-red);
-        }
-        
-        body.recharging .subtitle {
-            color: var(--danger-red);
+        /* --- RESPONSIVE --- */
+        @media (max-width: 1024px) {
+            .hud-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px auto auto auto 40px;
+                height: 100vh;
+                width: 100vw;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+            
+            .header-bar { grid-row: 1; }
+            .center-stage { grid-row: 2; grid-column: 1; margin: 2rem 0; }
+            .left-panel { grid-row: 3; grid-column: 1; width: 100%; clip-path: none; border: 1px solid var(--theme-dim); }
+            .right-panel { grid-row: 4; grid-column: 1; width: 100%; clip-path: none; border: 1px solid var(--theme-dim); }
+            .footer-bar { grid-row: 5; }
+            
+            .time-display { font-size: 4rem; }
+            .countdown-wrapper { gap: 0.5rem; }
+            .count-module { min-width: 60px; padding: 0.5rem; }
+            .count-val { font-size: 1.5rem; }
         }
 
-        body.recharging .live-time {
-            text-shadow: 0 0 10px var(--danger-red);
-            color: var(--danger-red);
-        }
-
-        /* Animations */
-        @keyframes marquee {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); }
-        }
-
-        @keyframes glitch-anim {
-            0% { clip: rect(10px, 9999px, 81px, 0); transform: translate(0) }
-            20% { clip: rect(40px, 9999px, 120px, 0); transform: translate(-2px) }
-            40% { clip: rect(2px, 9999px, 20px, 0); transform: translate(2px) }
-            60% { clip: rect(90px, 9999px, 120px, 0); transform: translate(-2px) }
-            80% { clip: rect(15px, 9999px, 50px, 0); transform: translate(2px) }
-            100% { clip: rect(60px, 9999px, 100px, 0); transform: translate(0) }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { clip: rect(30px, 9999px, 10px, 0); transform: translate(0) }
-            20% { clip: rect(100px, 9999px, 60px, 0); transform: translate(2px) }
-            40% { clip: rect(20px, 9999px, 80px, 0); transform: translate(-2px) }
-            60% { clip: rect(120px, 9999px, 40px, 0); transform: translate(2px) }
-            80% { clip: rect(10px, 9999px, 130px, 0); transform: translate(-2px) }
-            100% { clip: rect(50px, 9999px, 20px, 0); transform: translate(0) }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1.glitch { font-size: 2rem; }
-            .identity-name { font-size: 1.2rem; }
-            .countdown-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-            .number { font-size: 3rem; }
-            .dashboard-container { padding: 1.5rem; width: 95%; }
-            .mode-timer { font-size: 1.4rem; }
-        }
+        /* --- ANIMATIONS --- */
+        @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 5px var(--theme-color); } 50% { opacity: 0.3; box-shadow: 0 0 0 transparent; } 100% { opacity: 1; box-shadow: 0 0 5px var(--theme-color); } }
+        @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+        @keyframes equalizer { 0%, 100% { height: 5px; } 50% { height: 30px; } }
     </style>
 </head>
-<body class="deep-work">
+<body class="mode-deep-work">
 
+    <!-- VISUAL LAYERS -->
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
     <canvas id="particle-canvas"></canvas>
 
-    <div class="dashboard-container">
-        
-        <!-- IDENTITY MODULE -->
-        <div class="identity-badge">
-            <div class="identity-label">OPERATIVE AUTHENTICATED</div>
-            <div class="identity-name" id="typewriter-text"></div>
-        </div>
-
-        <div class="title-wrapper">
-            <h1 class="glitch" data-text="BUET // WAR ROOM">BUET // WAR ROOM</h1>
-            <div class="subtitle">TARGET: JANUARY 10, <span id="target-year"></span></div>
-        </div>
-
-        <!-- LIVE CLOCK MODULE -->
-        <div class="live-clock-wrapper">
-            <div class="live-time" id="live-time">00:00:00</div>
-            <div class="live-date" id="live-date">LOADING DATE DATA...</div>
-        </div>
-
-        <div class="countdown-grid">
-            <div class="time-box">
-                <span class="number" id="days">00</span>
-                <span class="label">Days</span>
+    <div class="hud-container">
+        <!-- HEADER -->
+        <header class="header-bar panel">
+            <div class="sys-status">
+                <div class="blink-dot"></div>
+                <span id="sys-status-text">SYSTEM ONLINE</span>
             </div>
-            <div class="time-box">
-                <span class="number" id="hours">00</span>
-                <span class="label">Hours</span>
+            <div class="user-id">
+                <!-- Cleared static text to prevent overlapping -->
+                <div class="user-name" id="typewriter-text"></div>
+                <div class="user-rank">CLASS: BUETIAN // CLEARANCE: ALPHA</div>
             </div>
-            <div class="time-box">
-                <span class="number" id="minutes">00</span>
-                <span class="label">Minutes</span>
-            </div>
-            <div class="time-box">
-                <span class="number" id="seconds">00</span>
-                <span class="label">Seconds</span>
-            </div>
-        </div>
+            <div class="corner-bl"></div>
+            <div class="corner-br"></div>
+        </header>
 
-        <div class="control-panel">
-            <label class="toggle-container">
-                <span class="status-text" id="status-label">MODE: DEEP WORK</span>
-                <div class="switch">
-                    <input type="checkbox" id="mode-toggle" checked>
-                    <span class="slider"></span>
-                </div>
-            </label>
-            <div class="status-message" id="status-message">Don't Disturb. Building the Future.</div>
+        <!-- LEFT PANEL: DATA -->
+        <aside class="left-panel panel">
+            <div class="corner-tl"></div>
+            <div class="corner-bl"></div>
             
-            <!-- NEW TIMER LOCATION -->
-            <div class="mode-timer" id="mode-timer">00:00:00</div>
-        </div>
-    </div>
+            <div class="data-block">
+                <h3>SESSION METRICS</h3>
+                <div class="stat-row">
+                    <span>STATUS</span>
+                    <span id="metrics-status">ACTIVE</span>
+                </div>
+                <div class="stat-row">
+                    <span>ELAPSED</span>
+                    <span id="mode-timer">00:00:00</span>
+                </div>
+                <div class="stat-row">
+                    <span>EFFICIENCY</span>
+                    <span style="color: var(--theme-color)">98.4%</span>
+                </div>
+            </div>
 
-    <div class="marquee-container">
-        <div class="marquee-content">
-            <span>BUET IMPLIES EXCELLENCE</span>
-            <span>PAIN IS TEMPORARY, GLORY IS FOREVER</span>
-            <span>SLEEP IS FOR THE WEAK</span>
-            <span>ENGINEERING THE FUTURE</span>
-            <span>FOCUS // EXECUTE // REPEAT</span>
-            <span>ADMISSION TEST LOADING...</span>
-        </div>
+            <div class="data-block">
+                <h3>AUDIO INPUT</h3>
+                <div class="audio-wave">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER STAGE: CLOCK -->
+        <main class="center-stage">
+            <div class="main-clock">
+                <div class="time-display" id="live-time">00:00</div>
+                <div class="date-display" id="live-date">LOADING...</div>
+            </div>
+
+            <div class="countdown-wrapper">
+                <div class="count-module">
+                    <span class="count-val" id="days">00</span>
+                    <span class="count-label">DAYS</span>
+                </div>
+                <div class="count-module">
+                    <span class="count-val" id="hours">00</span>
+                    <span class="count-label">HRS</span>
+                </div>
+                <div class="count-module">
+                    <span class="count-val" id="minutes">00</span>
+                    <span class="count-label">MIN</span>
+                </div>
+                <div class="count-module">
+                    <span class="count-val" id="seconds">00</span>
+                    <span class="count-label">SEC</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT PANEL: CONTROLS -->
+        <aside class="right-panel panel">
+            <div class="corner-tr"></div>
+            <div class="corner-br"></div>
+
+            <div class="data-block">
+                <h3>OBJECTIVES</h3>
+                <div style="font-size: 0.8rem; line-height: 1.6;">
+                    > ANALYZE PATTERNS<br>
+                    > MASTER PHYSICS<br>
+                    > SOLVE COMPLEXITY<br>
+                    > CONQUER BUET
+                </div>
+            </div>
+
+            <div class="mode-switch-container">
+                <span class="switch-label">PROTOCOL SELECTION</span>
+                <div class="tac-switch" id="mode-btn">
+                    <span class="tac-text">ENGAGE RECHARGE</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- FOOTER: MARQUEE -->
+        <footer class="footer-bar">
+            <div class="marquee">
+                <span>
+                    // TARGET: 10 JAN 2026 // PAIN IS TEMPORARY // GLORY IS FOREVER // ENGINEERING THE FUTURE // BUET AWAITS // FOCUS. EXECUTE. REPEAT //
+                </span>
+            </div>
+        </footer>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // --- CONSTANTS ---
         const TARGET_YEAR = 2026; 
         const TARGET_DATE = new Date(`January 10, ${TARGET_YEAR} 00:00:00`).getTime();
-        
-        document.getElementById('target-year').innerText = TARGET_YEAR;
+        const body = document.body;
+        const modeBtn = document.getElementById('mode-btn');
+        const modeBtnText = modeBtn.querySelector('.tac-text');
+        const sysStatus = document.getElementById('sys-status-text');
+        const metricsStatus = document.getElementById('metrics-status');
 
-        // --- LIVE CLOCK LOGIC ---
-        function updateLiveClock() {
+        let isDeepWork = true;
+
+        // --- CLOCK & CALENDAR ---
+        function updateClock() {
             const now = new Date();
             
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
+            // Time
+            let h = now.getHours();
+            let m = now.getMinutes();
+            let s = now.getSeconds();
+            let ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12;
+            h = h < 10 ? '0'+h : h;
+            m = m < 10 ? '0'+m : m;
+            s = s < 10 ? '0'+s : s; // For internal use if needed
             
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            hours = String(hours).padStart(2, '0');
+            // We only show H:M on big clock, seconds update in countdown or could be added
+            // Let's add seconds to big clock for that "War Room" precision
+            document.getElementById('live-time').innerHTML = `${h}:${m}<span style="font-size:0.5em; opacity:0.7">:${s}</span> <span style="font-size:0.3em; vertical-align:top">${ampm}</span>`;
             
-            document.getElementById('live-time').innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
-            
-            const options = { weekday: 'long', month: 'short', day: 'numeric' };
+            // Date
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
             document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', options).toUpperCase();
         }
-        setInterval(updateLiveClock, 1000);
-        updateLiveClock();
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        // --- MAIN COUNTDOWN LOGIC ---
-        function updateTimer() {
+        // --- COUNTDOWN ---
+        function updateCountdown() {
             const now = new Date().getTime();
             const distance = TARGET_DATE - now;
 
             if (distance < 0) {
-                document.getElementById("days").innerText = "00";
-                document.getElementById("hours").innerText = "00";
-                document.getElementById("minutes").innerText = "00";
-                document.getElementById("seconds").innerText = "00";
-                document.querySelector(".subtitle").innerText = "MISSION STATUS: DEPLOYED";
+                // Expired
                 return;
             }
 
@@ -567,66 +576,87 @@
             document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
             document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
         }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
 
-        setInterval(updateTimer, 1000);
-        updateTimer();
+        // --- MODE TOGGLE (TACTICAL) ---
+        modeBtn.addEventListener('click', () => {
+            isDeepWork = !isDeepWork;
+            
+            if (isDeepWork) {
+                body.className = 'mode-deep-work';
+                modeBtnText.innerText = "ENGAGE RECHARGE";
+                sysStatus.innerText = "SYSTEM ONLINE";
+                metricsStatus.innerText = "OPTIMAL";
+                particleColor = '#00f3ff';
+                metricsStatus.style.color = '#00f3ff';
+            } else {
+                body.className = 'mode-recharge';
+                modeBtnText.innerText = "ENGAGE DEEP WORK";
+                sysStatus.innerText = "STANDBY MODE";
+                metricsStatus.innerText = "COOLING";
+                particleColor = '#ff2a2a';
+                metricsStatus.style.color = '#ff2a2a';
+            }
+            resetSession();
+        });
 
-        // --- MODE TIMER LOGIC (NEW) ---
+        // --- SESSION TIMER ---
         let sessionStart = Date.now();
         let sessionInterval;
         const modeTimerDisplay = document.getElementById('mode-timer');
 
-        function updateModeTimer() {
+        function updateSessionTimer() {
             const now = Date.now();
             const elapsed = now - sessionStart;
-
-            const hours = Math.floor(elapsed / (1000 * 60 * 60));
-            const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
-
-            const h = hours < 10 ? "0" + hours : hours;
-            const m = minutes < 10 ? "0" + minutes : minutes;
-            const s = seconds < 10 ? "0" + seconds : seconds;
-
+            const h = Math.floor(elapsed / 3600000).toString().padStart(2, '0');
+            const m = Math.floor((elapsed % 3600000) / 60000).toString().padStart(2, '0');
+            const s = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
             modeTimerDisplay.innerText = `${h}:${m}:${s}`;
         }
 
         function resetSession() {
             clearInterval(sessionInterval);
             sessionStart = Date.now();
-            updateModeTimer(); // Reset visual immediately
-            sessionInterval = setInterval(updateModeTimer, 1000);
+            updateSessionTimer();
+            sessionInterval = setInterval(updateSessionTimer, 1000);
         }
-
-        // Start initial session
         resetSession();
 
+        // --- TYPEWRITER IDENTITY (Restored Logic) ---
+        const typeText = "SAROWAR JAHAN SAMIL";
+        const typeElement = document.getElementById('typewriter-text');
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 100;
 
-        // --- TOGGLE LOGIC ---
-        const toggle = document.getElementById('mode-toggle');
-        const body = document.body;
-        const statusLabel = document.getElementById('status-label');
-        const statusMsg = document.getElementById('status-message');
+        function typeWriter() {
+            const currentString = typeText.substring(0, charIndex);
+            // Use a blinking cursor effect
+            typeElement.innerHTML = currentString + '<span style="animation: blink 1s infinite">_</span>';
 
-        toggle.addEventListener('change', (e) => {
-            resetSession(); // RESET TIMER ON TOGGLE
-
-            if (e.target.checked) {
-                // DEEP WORK MODE
-                body.classList.remove('recharging');
-                statusLabel.innerText = "MODE: DEEP WORK";
-                statusMsg.innerText = "Don't Disturb. Building the Future.";
-                particleColor = '#00f3ff';
+            if (!isDeleting && charIndex < typeText.length) {
+                // TYPING
+                charIndex++;
+                typeSpeed = 100;
+                setTimeout(typeWriter, typeSpeed);
+            } else if (isDeleting && charIndex > 0) {
+                // DELETING
+                charIndex--;
+                typeSpeed = 50; 
+                setTimeout(typeWriter, typeSpeed);
             } else {
-                // RECHARGING MODE
-                body.classList.add('recharging');
-                statusLabel.innerText = "MODE: RECHARGING";
-                statusMsg.innerText = "System Cooling Down.";
-                particleColor = '#ff2a2a';
+                // PAUSING / SWITCHING STATE
+                isDeleting = !isDeleting;
+                // Using your specific timing preference
+                setTimeout(typeWriter, isDeleting ? 6900 : 500);
             }
-        });
+        }
+        
+        // Start the loop
+        typeWriter();
 
-        // --- PARTICLE BACKGROUND ---
+        // --- PARTICLES (UPDATED FOR GRID) ---
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         let particleColor = '#00f3ff';
@@ -635,20 +665,19 @@
         canvas.height = window.innerHeight;
 
         let particles = [];
-        const particleCount = 60; 
+        const particleCount = 80; // Denser
 
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.size = Math.random() * 2;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
             }
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-
                 if (this.x > canvas.width) this.x = 0;
                 if (this.x < 0) this.x = canvas.width;
                 if (this.y > canvas.height) this.y = 0;
@@ -663,71 +692,58 @@
         }
 
         function initParticles() {
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
         }
 
         function animateParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid lines roughly
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            const gridSize = 100;
+            
+            // This loop creates a subtle grid background
+            for(let x=0; x<canvas.width; x+=gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for(let y=0; y<canvas.height; y+=gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
                 particles[i].draw();
-            }
-            // Draw connections
-            for (let a = 0; a < particles.length; a++) {
-                for (let b = a; b < particles.length; b++) {
-                    let dx = particles[a].x - particles[b].x;
-                    let dy = particles[a].y - particles[b].y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < 100) {
+                
+                // Connect particles
+                for (let j = i; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let distance = Math.sqrt(dx*dx + dy*dy);
+                    if (distance < 120) {
                         ctx.strokeStyle = particleColor;
-                        ctx.lineWidth = 0.2;
+                        ctx.globalAlpha = 1 - (distance/120);
+                        ctx.lineWidth = 0.5;
                         ctx.beginPath();
-                        ctx.moveTo(particles[a].x, particles[a].y);
-                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
                         ctx.stroke();
+                        ctx.globalAlpha = 1;
                     }
                 }
             }
             requestAnimationFrame(animateParticles);
         }
-
+        
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            particles = [];
+            initParticles();
         });
 
         initParticles();
         animateParticles();
-
-        // --- TYPEWRITER EFFECT ---
-        const typeText = "SAROWAR JAHAN SAMIL";
-        const typeElement = document.getElementById('typewriter-text');
-        let charIndex = 0;
-        let isDeleting = false;
-        let typeSpeed = 100;
-
-        function typeWriter() {
-            const currentString = typeText.substring(0, charIndex);
-            typeElement.textContent = currentString;
-
-            if (!isDeleting && charIndex < typeText.length) {
-                charIndex++;
-                typeSpeed = 100;
-                setTimeout(typeWriter, typeSpeed);
-            } else if (isDeleting && charIndex > 0) {
-                charIndex--;
-                typeSpeed = 50; 
-                setTimeout(typeWriter, typeSpeed);
-            } else {
-                isDeleting = !isDeleting;
-                setTimeout(typeWriter, isDeleting ? 6900 : 500);
-            }
-        }
-
-        typeWriter();
     </script>
 </body>
 </html>
