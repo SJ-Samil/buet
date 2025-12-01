@@ -159,6 +159,36 @@
             transition: color 0.4s ease;
         }
 
+        /* LIVE CLOCK */
+        .live-clock-wrapper {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            padding: 1rem 2rem;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            width: 100%;
+            transition: border-color 0.4s ease;
+        }
+
+        .live-time {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 20px var(--primary-neon);
+            letter-spacing: 2px;
+            line-height: 1.1;
+            transition: text-shadow 0.4s ease, color 0.4s ease;
+        }
+
+        .live-date {
+            font-size: 0.9rem;
+            color: var(--secondary-neon);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
         /* Countdown Grid */
         .countdown-grid {
             display: grid;
@@ -377,6 +407,11 @@
             color: var(--danger-red);
         }
 
+        body.recharging .live-time {
+            text-shadow: 0 0 10px var(--danger-red);
+            color: var(--danger-red);
+        }
+
         /* Animations */
         @keyframes marquee {
             0% { transform: translate(0, 0); }
@@ -427,6 +462,12 @@
         <div class="title-wrapper">
             <h1 class="glitch" data-text="BUET // WAR ROOM">BUET // WAR ROOM</h1>
             <div class="subtitle">TARGET: JANUARY 10, <span id="target-year"></span></div>
+        </div>
+
+        <!-- LIVE CLOCK MODULE -->
+        <div class="live-clock-wrapper">
+            <div class="live-time" id="live-time">00:00:00</div>
+            <div class="live-date" id="live-date">LOADING DATE DATA...</div>
         </div>
 
         <div class="countdown-grid">
@@ -480,6 +521,27 @@
         const TARGET_DATE = new Date(`January 10, ${TARGET_YEAR} 00:00:00`).getTime();
         
         document.getElementById('target-year').innerText = TARGET_YEAR;
+
+        // --- LIVE CLOCK LOGIC ---
+        function updateLiveClock() {
+            const now = new Date();
+            
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            hours = String(hours).padStart(2, '0');
+            
+            document.getElementById('live-time').innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
+            
+            const options = { weekday: 'long', month: 'short', day: 'numeric' };
+            document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', options).toUpperCase();
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
 
         // --- MAIN COUNTDOWN LOGIC ---
         function updateTimer() {
